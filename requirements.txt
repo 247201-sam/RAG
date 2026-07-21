@@ -7,3 +7,5 @@ langchain-groq
 langchain-pinecone
 pinecone
 sentence-transformers
+torch
+torchvision
