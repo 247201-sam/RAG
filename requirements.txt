@@ -1,0 +1,10 @@
+streamlit
+langchain
+langchain-community
+langchain-groq
+pinecone-client
+sentence-transformers
+pypdf
+pytesseract
+pdf2image
+python-dotenv
