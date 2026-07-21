@@ -1,10 +1,9 @@
 streamlit
+PyMuPDF
 langchain
+langchain-core
 langchain-community
 langchain-groq
+langchain-pinecone
 pinecone-client
 sentence-transformers
-pypdf
-pytesseract
-pdf2image
-python-dotenv
