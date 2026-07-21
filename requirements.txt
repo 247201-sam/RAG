@@ -5,5 +5,5 @@ langchain-core
 langchain-community
 langchain-groq
 langchain-pinecone
-pinecone-client
+pinecone
 sentence-transformers
