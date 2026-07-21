@@ -1,5 +1,10 @@
-import streamlit as st
+import sys
 import os
+import streamlit as st  # Streamlit import kiya
+
+# Syntax error fix kiya (closing bracket ')' add kiya)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from config import GROQ_API_KEY, PINECONE_API_KEY, DEFAULT_INDEX_NAME, DEFAULT_NAMESPACE
 from src.pdf_processor import process_pdf
 from src.vector_store import index_to_pinecone
