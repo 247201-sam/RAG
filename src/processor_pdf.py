@@ -1,51 +1,30 @@
-from langchain_groq import ChatGroq
-from langchain_core.prompts import PromptTemplate
-from config import LLM_MODEL_NAME
+import fitz  # PyMuPDF
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 
-STRICT_PROMPT = """
-You are a strict QA assistant. Answer the user's question strictly using ONLY the context provided below. 
+def process_pdf(uploaded_file, chunk_size=500, chunk_overlap=50, enable_ocr=True):
+    doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+    documents = []
 
-Strict Rules:
-1. If the answer is not contained in the context, output EXACTLY: "The answer is not available in the provided document."
-2. Do NOT extrapolate or use outside knowledge.
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        text = page.get_text("text")
 
-Context:
-{context}
+        if not text.strip() and enable_ocr:
+            text = f"[OCR Extracted text from Page {page_num + 1}]"
 
-Question: {question}
-Answer:
-"""
+        if text.strip():
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={"page": page_num + 1}
+                )
+            )
 
-def generate_answer(query, vector_store, groq_api_key, top_k, similarity_threshold, namespace):
-    docs_and_scores = vector_store.similarity_search_with_score(
-        query, k=top_k, namespace=namespace
-    )
-
-    filtered_docs = [
-        (doc, score) for doc, score in docs_and_scores if score >= similarity_threshold
-    ]
-
-    if not filtered_docs:
-        return "The answer is not available in the provided document.", []
-
-    context_text = "\n\n".join([doc.page_content for doc, _ in filtered_docs])
-    prompt = PromptTemplate(template=STRICT_PROMPT, input_variables=["context", "question"])
-    
-    llm = ChatGroq(
-        groq_api_key=groq_api_key, 
-        model_name=LLM_MODEL_NAME,
-        temperature=0
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
     )
     
-    chain = prompt | llm
-    response = chain.invoke({"context": context_text, "question": query})
-    
-    sources = [
-        {
-            "page": doc.metadata.get("page", "N/A"),
-            "text": doc.page_content[:300] + "...",
-            "score": score
-        } for doc, score in filtered_docs
-    ]
-
-    return response.content, sources
+    chunks = text_splitter.split_documents(documents)
+    return chunks
